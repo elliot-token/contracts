@@ -45,22 +45,10 @@
 						"type": "uint256"
 					},
 					{
-						"components": [
-							{
-								"internalType": "string",
-								"name": "name",
-								"type": "string"
-							},
-							{
-								"internalType": "uint256",
-								"name": "totalBetAmount",
-								"type": "uint256"
-							}
-						],
 						"indexed": false,
-						"internalType": "struct bet.Team",
-						"name": "teamBet",
-						"type": "tuple"
+						"internalType": "uint256",
+						"name": "securityId",
+						"type": "uint256"
 					}
 				],
 				"name": "NewBet",
@@ -159,9 +147,9 @@
 				"name": "bets",
 				"outputs": [
 					{
-						"internalType": "string",
-						"name": "name",
-						"type": "string"
+						"internalType": "uint256",
+						"name": "id",
+						"type": "uint256"
 					},
 					{
 						"internalType": "address",
@@ -169,60 +157,27 @@
 						"type": "address"
 					},
 					{
+						"internalType": "bytes32",
+						"name": "betAmount",
+						"type": "bytes32"
+					},
+					{
 						"internalType": "uint256",
-						"name": "amount",
+						"name": "createdAt",
 						"type": "uint256"
 					},
 					{
-						"components": [
-							{
-								"internalType": "string",
-								"name": "name",
-								"type": "string"
-							},
-							{
-								"internalType": "uint256",
-								"name": "totalBetAmount",
-								"type": "uint256"
-							}
-						],
-						"internalType": "struct bet.Team",
-						"name": "teamBet",
-						"type": "tuple"
+						"internalType": "uint256",
+						"name": "securityId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bytes32",
+						"name": "betPrice",
+						"type": "bytes32"
 					}
 				],
 				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "string",
-						"name": "_name",
-						"type": "string"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_teamId",
-						"type": "uint256"
-					}
-				],
-				"name": "createBet",
-				"outputs": [],
-				"stateMutability": "payable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "string",
-						"name": "_name",
-						"type": "string"
-					}
-				],
-				"name": "createTeam",
-				"outputs": [],
-				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -243,25 +198,6 @@
 				"name": "depositBro",
 				"outputs": [],
 				"stateMutability": "payable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "_teamId",
-						"type": "uint256"
-					}
-				],
-				"name": "getTotalBetAmount",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
 				"type": "function"
 			},
 			{
@@ -320,34 +256,21 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
-						"name": "_teamId",
-						"type": "uint256"
-					}
-				],
-				"name": "teamWinDistribution",
-				"outputs": [],
-				"stateMutability": "payable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
 						"name": "",
 						"type": "uint256"
 					}
 				],
-				"name": "teams",
+				"name": "security",
 				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "id",
+						"type": "uint256"
+					},
 					{
 						"internalType": "string",
 						"name": "name",
 						"type": "string"
-					},
-					{
-						"internalType": "uint256",
-						"name": "totalBetAmount",
-						"type": "uint256"
 					}
 				],
 				"stateMutability": "view",
@@ -481,31 +404,35 @@
 	},
 	"sources": {
 		"contracts/atm.sol": {
-			"keccak256": "0x4c6905e4ae7524ba6329659efe079219d37a7fe8a87d4213c03ef0aa4fa9e5df",
+			"keccak256": "0x2935677994c6ef030d5b919866274cf71b3b1b1041aefcaaefe9d1a995526fd5",
+			"license": "UNLICENSED",
 			"urls": [
-				"bzz-raw://b24233dd7cf4b0092af3415f82a09bb866c8074114a21141580f2f34f1668774",
-				"dweb:/ipfs/QmU1X6c977nnuZRJZKA3uJs7dUW172Pck4C7VM1VhZoLTL"
+				"bzz-raw://8cf2b380ea900fd99a3e60a45d1e92057bc38ccbd37b55d4535055cd4c856e60",
+				"dweb:/ipfs/QmaP9TybySY2APabg9V5B7HMcMZBPspW7Y1DXeYQmXSWRS"
 			]
 		},
 		"contracts/bet.sol": {
-			"keccak256": "0x371fee0a3e6bff571f710df010513fde64c994e3cae48acc1b8d9aeea640e237",
+			"keccak256": "0x2d2bc4fbdf52bf0626d52354962a89f5a9ba0302919ca4f43aacddd403f180f9",
+			"license": "UNLICENSED",
 			"urls": [
-				"bzz-raw://1822a91d58e4ce264f25a0a1497bc60a3ed9e0d738f05c1c7fa8bf0142420755",
-				"dweb:/ipfs/QmaobqHTnkeq53aEdCNg9C7nU8NYDNibJ2GhkAoAcSK7f1"
+				"bzz-raw://6f47a1cddcd02e22eeb1a1179d2e9cba15d6d0e2bde9fe7b06ae78e65c0a1d40",
+				"dweb:/ipfs/QmYMrXFo7QwhZnZSRPeMdrJ6UE4yCmk2ShfxbdrStDsmDo"
 			]
 		},
 		"contracts/console.sol": {
-			"keccak256": "0x74a3436d9ba8fcbe9240ce3af16ad0a19968dc18f5d6d06b6f33514ba331efc9",
+			"keccak256": "0x75bc6d86c61b8a55ee87bce5d3fe5bfd26228ace372d6c2b0549dae52be29830",
+			"license": "UNLICENSED",
 			"urls": [
-				"bzz-raw://d0544e3fab172524914036b5108e6718e24f1f9cf6faed804ff0b1dba62e1f62",
-				"dweb:/ipfs/QmcAJJnB51yWFzhqRxfX5b98qeUo6QRighrPjavFxVs24W"
+				"bzz-raw://9b3cc4e78afbdb762fb87f2c687b22195f8110ff500f0bbedaf8b556efe3d1b2",
+				"dweb:/ipfs/QmaLL7ZUS2b1gNXDnuyVzYNv7JeRQqJecTjacjxjkjBuPb"
 			]
 		},
 		"contracts/ownable.sol": {
-			"keccak256": "0x78febf56c9116b45834c8256db522d0d5dbb9dac91b1f2d51d43ad54aab22784",
+			"keccak256": "0x4297842b4f90de4ad5e303bb8d3dfc9a0bd5edc31c1e7bcc1a12fa025276a95f",
+			"license": "UNLICENSED",
 			"urls": [
-				"bzz-raw://47e79d6a712459988cc7ec55c7f904b2d77295f4070094630f98f6a7c22abeb4",
-				"dweb:/ipfs/QmTy7gaBL8pesKR7jPXWjMJrX1X5aDZshaXbpthU6MUg6K"
+				"bzz-raw://6466b232fc59a41ff61c530c5b22fe737ea5dd981a2485e5154f9b5bade3e023",
+				"dweb:/ipfs/QmaCvfP9aSMM3HVKrEQkujBGw7ixdRRhBont5AKjGKU48H"
 			]
 		}
 	},

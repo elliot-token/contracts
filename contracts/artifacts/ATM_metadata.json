@@ -185,10 +185,11 @@
 	},
 	"sources": {
 		"contracts/atm.sol": {
-			"keccak256": "0x4c6905e4ae7524ba6329659efe079219d37a7fe8a87d4213c03ef0aa4fa9e5df",
+			"keccak256": "0x2935677994c6ef030d5b919866274cf71b3b1b1041aefcaaefe9d1a995526fd5",
+			"license": "UNLICENSED",
 			"urls": [
-				"bzz-raw://b24233dd7cf4b0092af3415f82a09bb866c8074114a21141580f2f34f1668774",
-				"dweb:/ipfs/QmU1X6c977nnuZRJZKA3uJs7dUW172Pck4C7VM1VhZoLTL"
+				"bzz-raw://8cf2b380ea900fd99a3e60a45d1e92057bc38ccbd37b55d4535055cd4c856e60",
+				"dweb:/ipfs/QmaP9TybySY2APabg9V5B7HMcMZBPspW7Y1DXeYQmXSWRS"
 			]
 		}
 	},

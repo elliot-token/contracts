@@ -128,10 +128,11 @@
 	},
 	"sources": {
 		"contracts/ownable.sol": {
-			"keccak256": "0x78febf56c9116b45834c8256db522d0d5dbb9dac91b1f2d51d43ad54aab22784",
+			"keccak256": "0x4297842b4f90de4ad5e303bb8d3dfc9a0bd5edc31c1e7bcc1a12fa025276a95f",
+			"license": "UNLICENSED",
 			"urls": [
-				"bzz-raw://47e79d6a712459988cc7ec55c7f904b2d77295f4070094630f98f6a7c22abeb4",
-				"dweb:/ipfs/QmTy7gaBL8pesKR7jPXWjMJrX1X5aDZshaXbpthU6MUg6K"
+				"bzz-raw://6466b232fc59a41ff61c530c5b22fe737ea5dd981a2485e5154f9b5bade3e023",
+				"dweb:/ipfs/QmaCvfP9aSMM3HVKrEQkujBGw7ixdRRhBont5AKjGKU48H"
 			]
 		}
 	},

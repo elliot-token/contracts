@@ -12,6 +12,23 @@ contract bet is ATM, Ownable {
         Team teamBet
     );
 
+    struct Security {
+        uint id;
+        bytes32 name;
+    }
+
+    struct Bet2 {
+        uint id;
+        address addy;
+        ufixed betAmount;
+        uint256 createdAt;
+        uint securityId;
+        fixed betPrice;
+
+    }
+
+
+
     struct Bet {
         string name;
         address addy;
@@ -26,6 +43,9 @@ contract bet is ATM, Ownable {
 
     Bet[] public bets;
     Team[] public teams;
+
+    Bet2[] public bets2;
+    Security[] public security;
     
     address payable conOwner;
     uint public totalBetMoney = 0;

@@ -181,6 +181,19 @@
 				"type": "function"
 			},
 			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "_name",
+						"type": "string"
+					}
+				],
+				"name": "createSecurity",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
 				"inputs": [],
 				"name": "deposit",
 				"outputs": [],
@@ -260,13 +273,8 @@
 						"type": "uint256"
 					}
 				],
-				"name": "security",
+				"name": "securities",
 				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "id",
-						"type": "uint256"
-					},
 					{
 						"internalType": "string",
 						"name": "name",
@@ -412,11 +420,11 @@
 			]
 		},
 		"contracts/bet.sol": {
-			"keccak256": "0x2d2bc4fbdf52bf0626d52354962a89f5a9ba0302919ca4f43aacddd403f180f9",
+			"keccak256": "0x185c094b7690c31583d9fe393414144bf22ac1666fa34001fdb174e68fb12467",
 			"license": "UNLICENSED",
 			"urls": [
-				"bzz-raw://6f47a1cddcd02e22eeb1a1179d2e9cba15d6d0e2bde9fe7b06ae78e65c0a1d40",
-				"dweb:/ipfs/QmYMrXFo7QwhZnZSRPeMdrJ6UE4yCmk2ShfxbdrStDsmDo"
+				"bzz-raw://39e9f5b543e5496fff36670a609401876b686dc166c227b1a737e47cb63a4079",
+				"dweb:/ipfs/QmeSi4yGCpEEQXAbVtfH4aCHuHKXyefg77K26JACfXDkRy"
 			]
 		},
 		"contracts/console.sol": {

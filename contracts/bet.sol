@@ -14,7 +14,6 @@ contract bet is ATM, Ownable {
     );
 
     struct Security {
-        uint id;
         string name;
     }
 
@@ -29,7 +28,7 @@ contract bet is ATM, Ownable {
 
 
     Bet[] public bets;
-    Security[] public security;
+    Security[] public securities;
     
     address payable conOwner;
     uint public totalBetMoney = 0;
@@ -39,5 +38,11 @@ contract bet is ATM, Ownable {
 
     constructor() payable {
         conOwner = payable(msg.sender);
+    }
+
+    function createSecurity(string memory _name) public onlyOwner {
+        securities.push(Security(
+            _name
+        ));
     }
 }

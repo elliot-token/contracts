@@ -16,10 +16,13 @@ contract Betting {
     struct Betters {
         uint256 betAmount;
         uint securityId;
+        string securityName;
     }
 
-    mapping(address => Betters) public mappingBetters;
 
+
+    mapping(address => Betters[]) public mappingBetters;
+    address [] public betters;
     //event Received(address, uint);
     //receive() external payable {
     //    emit Received(msg.sender, msg.value);
@@ -35,16 +38,19 @@ contract Betting {
 
 
     
-    function  placeBets (uint id) payable public {
+    function  placeBets (uint id, string memory name) payable public {
         
-        mappingBetters[msg.sender].betAmount = msg.value;
-        mappingBetters[msg.sender].securityId = id;
+        //mappingBetters[msg.sender].betAmount = msg.value;
+        //mappingBetters[msg.sender].securityId = id;
         
+        mappingBetters[msg.sender].push(Betters({
+            betAmount: msg.value,securityId : id, securityName: name
+        }));
+        betters.push(msg.sender);
     }
     
-    function getBet(address _address) public view returns(uint256, uint) {
-        return (mappingBetters[_address].betAmount, mappingBetters[_address].securityId);
+    function getBet(address _address,uint index) public view returns(uint256, uint, string memory) {
+        return (mappingBetters[_address][index].betAmount, mappingBetters[_address][index].securityId,  mappingBetters[_address][index].securityName);
     }
     
 }
-

@@ -52,5 +52,10 @@ contract Betting {
     function getBet(address _address,uint index) public view returns(uint256, uint, string memory) {
         return (mappingBetters[_address][index].betAmount, mappingBetters[_address][index].securityId,  mappingBetters[_address][index].securityName);
     }
-    
+
+    function removeBets(address _address) public onlyOwner {
+        // Remove last element from array
+        // This will decrease the array length by 1
+        mappingBetters[_address].pop();
+    }
 }

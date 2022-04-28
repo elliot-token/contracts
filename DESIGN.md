@@ -26,6 +26,6 @@
   
   ## Functions
   
-- createSecurity(_name): can be called by owner to create a new team that bets can be placed on
-- placeBet(_name, _teamId): can be called by a user with msg.value to place a bet on a certain team (elliot token transfers to contract)
-- resolveBets(_teamId): can be called by owner to resolve bets and distribute ELI (elliot tokens) to winners accordingly
+- createSecurity(_name): can be called by owner to create a new security that bets can be placed on
+- placeBet(_name, _securityId): can be called by a user with msg.value to place a bet on a certain team (elliot token transfers to contract)
+- resolveBets(_securityId): can be called by owner to resolve bets and distribute ELI (elliot tokens) to winners accordingly

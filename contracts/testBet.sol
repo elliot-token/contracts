@@ -10,7 +10,7 @@ contract Betting {
     }
 
     constructor() payable public {
-        owner = msg.sender;
+        owner = payable(msg.sender);
     }
 
     struct Betters {
@@ -28,9 +28,9 @@ contract Betting {
     //    emit Received(msg.sender, msg.value);
     //}
     //fallback() payable external {
-    function() payable external {
+    /* function() payable external {
 
-    }
+    }*/
 
     function balanceOf() external view returns(uint){
         return address(this).balance;

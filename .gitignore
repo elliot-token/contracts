@@ -1,1 +1,5 @@
 .deps
+artifacts
+cache
+ipfs
+node_modules

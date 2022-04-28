@@ -7,7 +7,7 @@
 ## Data Structure
 
 - `struct Security`:
-  - `uint id`: unique id of the bet
+  - `uint id`: unique id of the security
   - `bytes32 name`: name of the security (ETH, GOLD) 
 
 - `struct Bet`:

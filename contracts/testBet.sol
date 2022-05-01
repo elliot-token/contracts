@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity <= 0.9.11;
+pragma solidity ^0.8.7;
+
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+
+
 contract Betting {
     
+    AggregatorV3Interface internal priceFeed;      
     address payable owner;
 
     modifier onlyOwner() {
@@ -9,8 +14,9 @@ contract Betting {
         _;
     }
 
-    constructor() payable public {
+    constructor() payable {
         owner = payable(msg.sender);
+        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);
     }
 
     struct Betters {
@@ -29,7 +35,6 @@ contract Betting {
     //}
     //fallback() payable external {
     /* function() payable external {
-
     }*/
 
     function balanceOf() external view returns(uint){
@@ -58,4 +63,19 @@ contract Betting {
         // This will decrease the array length by 1
         mappingBetters[_address].pop();
     }
+
+        /**
+     * Returns the latest price
+     */
+    function getLatestPrice() public view returns (int) {
+        (
+            /*uint80 roundID*/,
+            int price,
+            /*uint startedAt*/,
+            /*uint timeStamp*/,
+            /*uint80 answeredInRound*/
+        ) = priceFeed.latestRoundData();
+        return price;
+    }
+    
 }

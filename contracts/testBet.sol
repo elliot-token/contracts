@@ -2,19 +2,24 @@
 pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "./elliotToken.sol";
 
 contract Betting {
-    
-    AggregatorV3Interface internal priceFeed;      
+
+    AggregatorV3Interface internal priceFeed;   
     address payable owner;
+    uint256 public balance;
+    address tokenAddress = 0x15ef3f1260688e201aA50D6Fa2c4ac03C54EC78f;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "You are not allowed!");
         _;
     }
 
-    constructor() payable {
+    event Bet(address sender, uint amount,uint securityId);
+
+    constructor() payable{
         owner = payable(msg.sender);
         priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);
     }
@@ -22,6 +27,8 @@ contract Betting {
     struct Betters {
         uint256 betAmount;
         uint securityId;
+        uint uniqueTransactionId;
+        int price;
         string securityName;
     }
 
@@ -33,9 +40,10 @@ contract Betting {
     //receive() external payable {
     //    emit Received(msg.sender, msg.value);
     //}
-    //fallback() payable external {
-    /* function() payable external {
-    }*/
+    fallback() payable external {
+    //function() payable external {
+
+    }
 
     function balanceOf() external view returns(uint){
         return address(this).balance;
@@ -43,19 +51,46 @@ contract Betting {
 
 
     
-    function  placeBets (uint id, string memory name) payable public {
+    function  placeBets (uint id, uint txid, string memory name) payable public {
         
         //mappingBetters[msg.sender].betAmount = msg.value;
         //mappingBetters[msg.sender].securityId = id;
-        
+        require (msg.value > 1 gwei, "bet more");
         mappingBetters[msg.sender].push(Betters({
-            betAmount: msg.value,securityId : id, securityName: name
+            betAmount: msg.value,securityId : id,uniqueTransactionId : txid, price : getLatestPrice() ,securityName: name
         }));
         betters.push(msg.sender);
+        this.transferFrom(msg.value);
+        emit Bet(msg.sender, msg.value,id);
+        
+    }
+
+    function withdraw(uint amount, address payable destAddress) public {
+        require (amount <= balance,"insufficient funds");
+        destAddress.transfer(amount);
+        balance -= amount;
     }
     
-    function getBet(address _address,uint index) public view returns(uint256, uint, string memory) {
-        return (mappingBetters[_address][index].betAmount, mappingBetters[_address][index].securityId,  mappingBetters[_address][index].securityName);
+    function transferFrom(uint amount) public {
+        // Then calling this function from remix
+        ERC20(tokenAddress).transferFrom(msg.sender, address(this), amount);
+    }
+
+    function transferTo(uint amount) public {
+        ERC20(tokenAddress).transfer(msg.sender,amount);
+    }
+
+    function getBet(address _address,uint index) public view returns(uint256, uint, uint, int, string memory) {
+        return (mappingBetters[_address][index].betAmount, mappingBetters[_address][index].securityId, 
+         mappingBetters[_address][index].uniqueTransactionId, mappingBetters[_address][index].price, 
+         mappingBetters[_address][index].securityName);
+    }
+
+    function resolveBets(address payable betterAddress,uint betNumberIndex) public onlyOwner {
+        if ( getLatestPrice() > (120 * mappingBetters[betterAddress][betNumberIndex].price) / 100 ) {
+            //betterAddress.transfer(mappingBetters[betterAddress][betNumberIndex].betAmount * 2);
+            this.transferTo(mappingBetters[betterAddress][betNumberIndex].betAmount * 2);
+        }
     }
 
     function removeBets(address _address) public onlyOwner {
@@ -64,7 +99,7 @@ contract Betting {
         mappingBetters[_address].pop();
     }
 
-        /**
+    /**
      * Returns the latest price
      */
     function getLatestPrice() public view returns (int) {
@@ -77,5 +112,28 @@ contract Betting {
         ) = priceFeed.latestRoundData();
         return price;
     }
-    
+
+    /**
+     * Returns historical price for a round id.
+     * roundId is NOT incremental. Not all roundIds are valid.
+     * You must know a valid roundId before consuming historical data.
+     *
+     * ROUNDID VALUES:
+     *    InValid:      18446744073709562300
+     *    Valid:        18446744073709562301
+     *    
+     * @dev A timestamp with zero value means the round is not complete and should not be used.
+     */
+    function getHistoricalPrice(uint80 roundId) public view returns (int256) {
+        (
+            uint80 id, 
+            int price,
+            uint startedAt,
+            uint timeStamp,
+            uint80 answeredInRound
+        ) = priceFeed.getRoundData(roundId);
+        require(timeStamp > 0, "Round not complete");
+        return price;
+    }
 }
+

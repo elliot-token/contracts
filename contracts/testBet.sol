@@ -18,6 +18,7 @@ contract Betting {
     }
 
     event Bet(address sender, uint amount,uint securityId);
+    event BetWon(address better, uint amount,uint securityId);
 
     constructor() payable{
         owner = payable(msg.sender);
@@ -91,6 +92,7 @@ contract Betting {
             if ( getLatestPrice() > (120 * mappingBetters[betterAddress][i].price) / 100 ) {
              //betterAddress.transfer(mappingBetters[betterAddress][betNumberIndex].betAmount * 2);
               this.transferTo(mappingBetters[betterAddress][i].betAmount * 2);
+              emit BetWon(betterAddress, mappingBetters[betterAddress][i].betAmount * 2,mappingBetters[betterAddress][i].securityId);
             }
         removeBets(betterAddress);
         }
@@ -101,6 +103,7 @@ contract Betting {
         if ( getLatestPrice() > (120 * mappingBetters[betterAddress][betNumberIndex].price) / 100 ) {
             //betterAddress.transfer(mappingBetters[betterAddress][betNumberIndex].betAmount * 2);
             this.transferTo(mappingBetters[betterAddress][betNumberIndex].betAmount * 2);
+            emit BetWon(betterAddress, mappingBetters[betterAddress][betNumberIndex].betAmount * 2,mappingBetters[betterAddress][betNumberIndex].securityId);
         }
         removeBets(betterAddress);
         

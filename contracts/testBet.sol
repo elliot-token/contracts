@@ -10,7 +10,7 @@ contract Betting {
     AggregatorV3Interface internal priceFeed;   
     address payable owner;
     uint256 public balance;
-    address tokenAddress = 0x15ef3f1260688e201aA50D6Fa2c4ac03C54EC78f;
+    address tokenAddress = 0x3C66C78D941128BddC918b4c901C954b5099EAA0;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "You are not allowed!");
@@ -86,11 +86,24 @@ contract Betting {
          mappingBetters[_address][index].securityName);
     }
 
-    function resolveBets(address payable betterAddress,uint betNumberIndex) public onlyOwner {
+    function resolveBetsAll(address payable betterAddress) public onlyOwner {
+        for (uint i = mappingBetters[betterAddress].length -1 ; i >=0; i--) {
+            if ( getLatestPrice() > (120 * mappingBetters[betterAddress][i].price) / 100 ) {
+             //betterAddress.transfer(mappingBetters[betterAddress][betNumberIndex].betAmount * 2);
+              this.transferTo(mappingBetters[betterAddress][i].betAmount * 2);
+            }
+        removeBets(betterAddress);
+        }
+    }
+
+    function resolveBetsIndividual(address payable betterAddress,uint betNumberIndex) public onlyOwner {
+        
         if ( getLatestPrice() > (120 * mappingBetters[betterAddress][betNumberIndex].price) / 100 ) {
             //betterAddress.transfer(mappingBetters[betterAddress][betNumberIndex].betAmount * 2);
             this.transferTo(mappingBetters[betterAddress][betNumberIndex].betAmount * 2);
         }
+        removeBets(betterAddress);
+        
     }
 
     function removeBets(address _address) public onlyOwner {

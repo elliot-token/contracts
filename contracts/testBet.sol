@@ -52,17 +52,17 @@ contract Betting {
 
 
     
-    function  placeBets (uint id, uint txid, string memory name) payable public {
+    function  placeBets (uint betAmount, uint id, uint txid, string memory name) payable public {
         
         //mappingBetters[msg.sender].betAmount = msg.value;
         //mappingBetters[msg.sender].securityId = id;
-        require (msg.value > 1 gwei, "bet more");
+        //require (msg.value > 1 gwei, "bet more");
         mappingBetters[msg.sender].push(Betters({
             betAmount: msg.value,securityId : id,uniqueTransactionId : txid, price : getLatestPrice() ,securityName: name
         }));
         betters.push(msg.sender);
-        this.transferFrom(msg.value);
-        emit Bet(msg.sender, msg.value,id);
+        this.transferFrom(msg.sender,betAmount);
+        emit Bet(msg.sender, betAmount,id);
         
     }
 
@@ -72,9 +72,10 @@ contract Betting {
         balance -= amount;
     }
     
-    function transferFrom(uint amount) public {
+    function transferFrom(address sender,uint amount) public {
         // Then calling this function from remix
-        ERC20(tokenAddress).transferFrom(msg.sender, address(this), amount);
+        ERC20(tokenAddress).transferFrom(sender, address(this), amount);
+        //ERC20(tokenAddress).transferFrom(msg.sender, tokenAddress, amount);
     }
 
     function transferTo(uint amount) public {

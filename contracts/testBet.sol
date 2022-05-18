@@ -10,7 +10,7 @@ contract Betting {
     AggregatorV3Interface internal priceFeed;   
     address payable owner;
     uint256 public balance;
-    address tokenAddress = 0x3C66C78D941128BddC918b4c901C954b5099EAA0;
+    address tokenAddress ;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "You are not allowed!");
@@ -20,9 +20,10 @@ contract Betting {
     event Bet(address sender, uint amount,uint securityId);
     event BetWon(address better, uint amount,uint securityId);
 
-    constructor() payable{
+    constructor(address tokenAddr) payable{
         owner = payable(msg.sender);
         priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);
+        tokenAddress = tokenAddr;
     }
 
     struct Betters {
@@ -50,6 +51,11 @@ contract Betting {
         return address(this).balance;
     }
 
+    
+    function  testBet (uint betAmount, uint id, uint txid, string memory name) payable public {
+        emit Bet(msg.sender, betAmount,id);
+    }
+
 
     
     function  placeBets (uint betAmount, uint id, uint txid, string memory name) payable public {
@@ -58,12 +64,14 @@ contract Betting {
         //mappingBetters[msg.sender].securityId = id;
         //require (msg.value > 1 gwei, "bet more");
         mappingBetters[msg.sender].push(Betters({
-            betAmount: msg.value,securityId : id,uniqueTransactionId : txid, price : getLatestPrice() ,securityName: name
+            betAmount: betAmount,securityId : id,uniqueTransactionId : txid, price : 20,securityName: name
         }));
         betters.push(msg.sender);
-        this.transferFrom(msg.sender,betAmount);
+
+        //uint256 allowance = ERC20(tokenAddress).allowance(msg.sender, address(this));
+       // require(allowance >= betAmount, "Check the token allowance");
+        ERC20(tokenAddress).transferFrom(msg.sender, address(this), betAmount);
         emit Bet(msg.sender, betAmount,id);
-        
     }
 
     function withdraw(uint amount, address payable destAddress) public {
@@ -81,6 +89,7 @@ contract Betting {
     function transferTo(uint amount) public {
         ERC20(tokenAddress).transfer(msg.sender,amount);
     }
+
 
     function getBet(address _address,uint index) public view returns(uint256, uint, uint, int, string memory) {
         return (mappingBetters[_address][index].betAmount, mappingBetters[_address][index].securityId, 

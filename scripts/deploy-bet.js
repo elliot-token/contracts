@@ -13,13 +13,19 @@ async function main() {
   // manually to make sure everything is compiled
   // await hre.run('compile');
 
+  const ElliotToken = await hre.ethers.getContractFactory("ElliotToken");
+  const elliotTokenDeployTask = await ElliotToken.deploy(
+    "1000000000000000000000000"
+  );
+  await elliotTokenDeployTask.deployed();
+  console.log("Token deployed to:", elliotTokenDeployTask.address);
+
   // We get the contract to deploy
   const Betting = await hre.ethers.getContractFactory("Betting");
-  const greeter = await Betting.deploy();
+  const betDeployTask = await Betting.deploy(elliotTokenDeployTask.address);
 
-  await greeter.deployed();
-
-  console.log("Greeter deployed to:", greeter.address);
+  await betDeployTask.deployed();
+  console.log("Bet deployed to:", betDeployTask.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

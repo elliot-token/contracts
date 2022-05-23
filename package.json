@@ -1,7 +1,8 @@
 {
   "scripts": {
     "deploy:localhost": "npx hardhat run scripts/deploy-bet.js --network localhost",
-    "deploy:ropsten": "npx hardhat run scripts/deploy-bet.js --network ropsten"
+    "deploy:ropsten": "npx hardhat run scripts/deploy-bet.js --network ropsten",
+    "deploy:kovan": "npx hardhat run scripts/deploy-bet.js --network kovan"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.5",
@@ -12,6 +13,7 @@
     "hardhat": "^2.9.3"
   },
   "dependencies": {
+    "@chainlink/contracts": "^0.4.0",
     "@openzeppelin/contracts": "^4.6.0"
   }
 }

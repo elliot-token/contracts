@@ -70,4 +70,27 @@ describe("Bet contract", function () {
     // RIGHT ?
     expect(newBet[3] >= "196617000000").to.be.true;
   });
+
+  it("resolveBet should fail if betId does not exists", async () => {
+    await expect(contract.resolveBet(2))
+      .to.be /* @ts-ignore */
+      .rejectedWith(Error);
+  });
+
+  it("resolveBet should fail if corresponding bet does not belong to caller", async () => {
+    // TODO
+    // how to create another caller address ?
+  });
+
+  it("resolveBet should mark placed bet as resolved", async () => {
+    const [owner] = await ethers.getSigners();
+    await tokenContract.approve(contract.address, "100000000000000002");
+    await contract.placeBet("100000000000000001", 1);
+
+    let correspondingBet = await contract.placedBets(owner.address, 0);
+    expect(correspondingBet[4]).to.be.false;
+    await contract.resolveBet(0);
+    correspondingBet = await contract.placedBets(owner.address, 0);
+    expect(correspondingBet[4]).to.be.true;
+  });
 });

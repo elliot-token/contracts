@@ -18,7 +18,7 @@ contract BetContract {
     }
 
     event BetPlaced(address sender, uint amount,uint optionId);
-    event BetWon(address better, uint amount,uint optionId);
+    event BetResolved(address better, uint betAmount, uint receivedAmount, uint optionId);
     event Received(address, uint);
 
     constructor(address tokenAddr, int[][] memory optionValues) payable {
@@ -27,7 +27,7 @@ contract BetContract {
         tokenAddress = tokenAddr;
         for (uint i=0; i < optionValues.length; i++) {
             options.push(Option({
-                optionId: getOptionId(),
+                optionId: getNextOptionId(),
                 min: optionValues[i][0],
                 max: optionValues[i][1],
                 odd: optionValues[i][2]
@@ -52,6 +52,7 @@ contract BetContract {
         uint optionId;
         uint betId;
         int price;
+        bool resolved;
     }
 
     mapping(address => Bet[]) public placedBets;
@@ -68,32 +69,33 @@ contract BetContract {
         return address(this).balance;
     }
 
-    uint public betId;
+    uint public nextBetId;
 
-    function getBetId() public returns (uint) {
-        return betId++;
+    function getNextBetId() public returns (uint) {
+        return nextBetId++;
     }
 
-    uint public optId;
+    uint public nextOptionId;
 
-    function getOptionId() public returns (uint) {
-        return optId++;
+    function getNextOptionId() public returns (uint) {
+        return nextOptionId++;
     }
 
 
     function placeBet(uint betAmount, uint optionId) payable public {
         require(betAmount > 10000000000000000, "Bet should be at least 0.0001 ELL");
         require(options.length > optionId, "Option does not exist");
-        uint currentBetId = getBetId();
+        uint betId = getNextBetId();
         placedBets[msg.sender].push(Bet({
             betAmount: betAmount,
             optionId: optionId, 
-            betId: currentBetId, 
-            price: getLatestPrice()
+            betId: betId, 
+            price: getLatestPrice(),
+            resolved: false
         }));
         ERC20(tokenAddress).transferFrom(msg.sender, address(this), betAmount);
         betters.push(msg.sender);
-        emit BetPlaced(msg.sender, betAmount, currentBetId);
+        emit BetPlaced(msg.sender, betAmount, betId);
     }
 
     function withdraw(uint amount, address payable destAddress) public {
@@ -120,34 +122,36 @@ contract BetContract {
             placedBets[_address][index].price
         );
     }
+    
+    function resolveBet(uint betId) public {
+        require(placedBets[msg.sender].length > betId, "Corresponding bet not found");
 
-    function resolveBetsAll(address payable betterAddress) public onlyOwner {
-        for (uint i = placedBets[betterAddress].length -1 ; i >=0; i--) {
-            if ( getLatestPrice() > (120 * placedBets[betterAddress][i].price) / 100 ) {
-             //betterAddress.transfer(placedBets[betterAddress][betNumberIndex].betAmount * 2);
-              this.transferTo(placedBets[betterAddress][i].betAmount * 2);
-              emit BetWon(betterAddress, placedBets[betterAddress][i].betAmount * 2,placedBets[betterAddress][i].optionId);
-            }
-        removeBets(betterAddress);
-        }
-    }
 
-    function resolveBetsIndividual(address payable betterAddress,uint betNumberIndex) public onlyOwner {
-        
-        if ( getLatestPrice() > (120 * placedBets[betterAddress][betNumberIndex].price) / 100 ) {
+        Bet memory correspondingBet = placedBets[msg.sender][betId];
+
+        if (getLatestPrice() > (120 * correspondingBet.price) / 100 ) {
             //betterAddress.transfer(placedBets[betterAddress][betNumberIndex].betAmount * 2);
-            this.transferTo(placedBets[betterAddress][betNumberIndex].betAmount * 2);
-            emit BetWon(betterAddress, placedBets[betterAddress][betNumberIndex].betAmount * 2,placedBets[betterAddress][betNumberIndex].optionId);
+            this.transferTo(correspondingBet.betAmount * 2);
+            emit BetResolved(
+                msg.sender, 
+                correspondingBet.betAmount,
+                correspondingBet.betAmount * 2, 
+                correspondingBet.optionId
+            );
+        } else {
+            emit BetResolved(
+                msg.sender, 
+                correspondingBet.betAmount,
+                0,
+                correspondingBet.optionId
+            );
+
         }
-        removeBets(betterAddress);
-        
+        placedBets[msg.sender][betId].resolved = true;
+
+
     }
 
-    function removeBets(address _address) public onlyOwner {
-        // Remove last element from array
-        // This will decrease the array length by 1
-        placedBets[_address].pop();
-    }
 
     /**
      * Returns the latest price

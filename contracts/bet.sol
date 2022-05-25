@@ -1,36 +1,46 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: unlicensed
 pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "./elliotToken.sol";
 import "hardhat/console.sol";
+import "./elliotToken.sol";
 
 contract BetContract {
-    AggregatorV3Interface internal priceFeed;   
+    AggregatorV3Interface internal priceFeed;
+    ERC20 internal tokenContract;
     address payable owner;
     uint256 public balance;
-    address public tokenAddress;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "You are not allowed!");
         _;
     }
 
+    function getOwner() public view returns (address) {
+        return owner;
+    }
+
+
+
     event BetPlaced(address sender, uint amount,uint optionId);
     event BetResolved(address better, uint betAmount, uint receivedAmount, uint optionId);
     event Received(address, uint);
 
-    constructor(address tokenAddr, int[][] memory optionValues) payable {
+    constructor(
+        address _priceFeed,
+        address tokenAddr, 
+        int[][] memory optionValues
+    ) payable {
+        priceFeed = AggregatorV3Interface(_priceFeed);
         owner = payable(msg.sender);
-        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);
-        tokenAddress = tokenAddr;
+        tokenContract = ERC20(tokenAddr);
         for (uint i=0; i < optionValues.length; i++) {
             options.push(Option({
                 optionId: getNextOptionId(),
                 min: optionValues[i][0],
                 max: optionValues[i][1],
-                odd: optionValues[i][2]
+                odd: uint(optionValues[i][2]) 
             }));
         }
     }
@@ -42,7 +52,7 @@ contract BetContract {
         // excluded maximum
         int max;
         // 2 digits, odd = 121 -> 1.21% gain
-        int odd;
+        uint odd;
     }
     Option[] public options;
 
@@ -53,9 +63,12 @@ contract BetContract {
         uint betId;
         int price;
         bool resolved;
+        uint odd;
+        uint timestamp;
+
     }
 
-    mapping(address => Bet[]) public placedBets;
+    mapping(address => Bet[]) public bets;
     address [] public betters;
 
     fallback() payable external {
@@ -86,14 +99,18 @@ contract BetContract {
         require(betAmount > 10000000000000000, "Bet should be at least 0.0001 ELL");
         require(options.length > optionId, "Option does not exist");
         uint betId = getNextBetId();
-        placedBets[msg.sender].push(Bet({
+
+
+        bets[msg.sender].push(Bet({
             betAmount: betAmount,
             optionId: optionId, 
             betId: betId, 
             price: getLatestPrice(),
-            resolved: false
+            resolved: false,
+            odd: options[optionId].odd,
+            timestamp: block.timestamp
         }));
-        ERC20(tokenAddress).transferFrom(msg.sender, address(this), betAmount);
+        tokenContract.transferFrom(msg.sender, address(this), betAmount);
         betters.push(msg.sender);
         emit BetPlaced(msg.sender, betAmount, betId);
     }
@@ -106,32 +123,37 @@ contract BetContract {
     
     function transferFrom(address sender,uint amount) public {
         // Then calling this function from remix
-        ERC20(tokenAddress).transferFrom(sender, address(this), amount);
-        //ERC20(tokenAddress).transferFrom(msg.sender, tokenAddress, amount);
+        tokenContract.transferFrom(sender, address(this), amount);
+        //tokenContract.transferFrom(msg.sender, tokenAddress, amount);
     }
 
     function transferTo(uint amount) public {
-        ERC20(tokenAddress).transfer(msg.sender,amount);
+        tokenContract.transfer(msg.sender,amount);
     }
 
 
     function getBet(address _address,uint index) public view returns(uint256, uint256, int256) {
         return (
-            placedBets[_address][index].betAmount,
-            placedBets[_address][index].betId, 
-            placedBets[_address][index].price
+            bets[_address][index].betAmount,
+            bets[_address][index].betId, 
+            bets[_address][index].price
         );
     }
     
-    function resolveBet(uint betId) public {
-        require(placedBets[msg.sender].length > betId, "Corresponding bet not found");
+    function resolveBet(uint betId, uint80 roundId) public {
+        require(bets[msg.sender].length > betId, "Corresponding bet not found");        
 
+        Bet memory correspondingBet = bets[msg.sender][betId];
+        Option memory correspondingOption = options[correspondingBet.optionId];
 
-        Bet memory correspondingBet = placedBets[msg.sender][betId];
+        require(!correspondingBet.resolved, "Bet already resolved");
+        int price = getHistoricalPrice(roundId);
 
-        if (getLatestPrice() > (120 * correspondingBet.price) / 100 ) {
-            //betterAddress.transfer(placedBets[betterAddress][betNumberIndex].betAmount * 2);
-            this.transferTo(correspondingBet.betAmount * 2);
+        if (
+            correspondingBet.price * (100 + correspondingOption.max) / 100 > price
+            && correspondingBet.price * (100 + correspondingOption.min) / 100 <= price
+        ) {
+            tokenContract.transfer(msg.sender, correspondingBet.betAmount * correspondingBet.odd / 100);
             emit BetResolved(
                 msg.sender, 
                 correspondingBet.betAmount,
@@ -147,11 +169,10 @@ contract BetContract {
             );
 
         }
-        placedBets[msg.sender][betId].resolved = true;
+        bets[msg.sender][betId].resolved = true;
 
 
     }
-
 
     /**
      * Returns the latest price
@@ -167,24 +188,12 @@ contract BetContract {
         return price;
     }
 
-    /**
-     * Returns historical price for a round id.
-     * roundId is NOT incremental. Not all roundIds are valid.
-     * You must know a valid roundId before consuming historical data.
-     *
-     * ROUNDID VALUES:
-     *    InValid:      18446744073709562300
-     *    Valid:        18446744073709562301
-     *    
-     * @dev A timestamp with zero value means the round is not complete and should not be used.
-     */
-    function getHistoricalPrice(uint80 roundId) public view returns (int256) {
+    function getHistoricalPrice(uint80 roundId) private view returns (int256) {
         (
-            uint80 id, 
+            , 
             int price,
-            uint startedAt,
+            ,
             uint timeStamp,
-            uint80 answeredInRound
         ) = priceFeed.getRoundData(roundId);
         require(timeStamp > 0, "Round not complete");
         return price;

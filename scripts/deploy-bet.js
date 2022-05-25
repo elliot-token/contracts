@@ -21,8 +21,21 @@ async function main() {
   console.log("Token deployed to:", elliotTokenDeployTask.address);
 
   // We get the contract to deploy
-  const Betting = await hre.ethers.getContractFactory("Betting");
-  const betDeployTask = await Betting.deploy(elliotTokenDeployTask.address);
+  const Betting = await hre.ethers.getContractFactory("BetContract");
+  const betDeployTask = await Betting.deploy(
+    "0x9326BFA02ADD2366b30bacB125260Af641031331",
+    elliotTokenDeployTask.address,
+    [
+      [-100000, -10, 320],
+      [-10, -5, 220],
+      [-5, -2, 170],
+      [-2, 0, 121],
+      [0, 2, 70],
+      [2, 5, 170],
+      [5, 10, 220],
+      [5, 10000, 320],
+    ]
+  );
 
   await betDeployTask.deployed();
   console.log("Bet deployed to:", betDeployTask.address);

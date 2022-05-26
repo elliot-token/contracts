@@ -2,13 +2,15 @@
 pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "hardhat/console.sol";
-import "./elliotToken.sol";
+import "../interfaces/IDatetime.sol";
+
 
 contract BetContract {
     AggregatorV3Interface internal priceFeed;
-    ERC20 internal tokenContract;
+    IERC20 internal tokenContract;
+    IDatetime internal dateTimeContract;
     address payable owner;
     uint256 public balance;
 
@@ -28,13 +30,15 @@ contract BetContract {
     event Received(address, uint);
 
     constructor(
-        address _priceFeed,
+        address priceFeedAddr,
         address tokenAddr, 
+        address dateTimeAddr,
         int[][] memory optionValues
     ) payable {
-        priceFeed = AggregatorV3Interface(_priceFeed);
+        priceFeed = AggregatorV3Interface(priceFeedAddr);
         owner = payable(msg.sender);
-        tokenContract = ERC20(tokenAddr);
+        dateTimeContract = IDatetime(dateTimeAddr);
+        tokenContract = IERC20(tokenAddr);
         for (uint i=0; i < optionValues.length; i++) {
             options.push(Option({
                 optionId: getNextOptionId(),
@@ -65,7 +69,7 @@ contract BetContract {
         bool resolved;
         uint odd;
         uint timestamp;
-
+        uint resolvedAfter;
     }
 
     mapping(address => Bet[]) public bets;
@@ -94,7 +98,6 @@ contract BetContract {
         return nextOptionId++;
     }
 
-
     function placeBet(uint betAmount, uint optionId) payable public {
         require(betAmount > 10000000000000000, "Bet should be at least 0.0001 ELL");
         require(options.length > optionId, "Option does not exist");
@@ -108,7 +111,8 @@ contract BetContract {
             price: getLatestPrice(),
             resolved: false,
             odd: options[optionId].odd,
-            timestamp: block.timestamp
+            timestamp: block.timestamp,
+            resolvedAfter: block.timestamp 
         }));
         tokenContract.transferFrom(msg.sender, address(this), betAmount);
         betters.push(msg.sender);
@@ -141,12 +145,16 @@ contract BetContract {
     }
     
     function resolveBet(uint betId, uint80 roundId) public {
+        console.log(block.timestamp);
+
         require(bets[msg.sender].length > betId, "Corresponding bet not found");        
 
         Bet memory correspondingBet = bets[msg.sender][betId];
         Option memory correspondingOption = options[correspondingBet.optionId];
 
         require(!correspondingBet.resolved, "Bet already resolved");
+
+
         int price = getHistoricalPrice(roundId);
 
         if (

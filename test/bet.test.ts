@@ -3,6 +3,8 @@ import { Contract, Signer } from "ethers";
 import chai, { expect, assert } from "chai";
 chai;
 import BN from "bn.js";
+import testUtils from "./utils";
+import { addDays } from "date-fns";
 
 chai.use(require("chai-as-promised"));
 
@@ -132,6 +134,17 @@ describe("Bet contract", function () {
     await contract.resolveBet(0, 1);
     return assert.isRejected(contract.resolveBet(0, 1), /Bet already resolved/);
   });
+
+  it("resolveBet should fails if try to resolve before date", async () => {
+    const tomorrow = addDays(new Date(), 1);
+    console.log(tomorrow.getTime());
+    testUtils.setBlockTimestamp(Math.floor(tomorrow.getTime() / 1000));
+    await tokenContract.approve(contract.address, "100000000000000001");
+    await contract.placeBet("100000000000000001", 1);
+    await contract.resolveBet(0, 1);
+  });
+
+  it("resolveBet should fails if no resolved price found", async () => {});
 
   it("resolveBet should transfer ELL to address if bet won", async () => {
     const [_, addr1] = await ethers.getSigners();

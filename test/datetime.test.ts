@@ -8,6 +8,7 @@ describe("Datetime contract", () => {
     const DateTimeContract = await ethers.getContractFactory("DateTime");
     contract = await DateTimeContract.deploy();
   });
+
   it("should return 9pm current day if before 3pm", async () => {
     const date = new Date("1995-04-10T12:40:20+01:00");
     const resolvedAfter = await contract.getResolvedAfter(

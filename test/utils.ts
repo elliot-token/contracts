@@ -1,7 +1,9 @@
 import { network } from "hardhat";
 
-const setBlockTimestamp = async (value: number) => {
-  await network.provider.send("evm_setNextBlockTimestamp", [1625097600]);
+const setBlockTimestamp = async (date: Date) => {
+  await network.provider.send("evm_setNextBlockTimestamp", [
+    Math.floor(date.getTime() / 1000),
+  ]);
   await network.provider.send("evm_mine");
 };
 

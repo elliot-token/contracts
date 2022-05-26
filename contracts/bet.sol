@@ -69,10 +69,12 @@ contract BetContract {
         bool resolved;
         uint odd;
         uint timestamp;
-        uint resolvedAfter;
+        uint256 resolvedAfter;
     }
 
     mapping(address => Bet[]) public bets;
+    mapping(uint => int) public resolvedPrices;
+
     address [] public betters;
 
     fallback() payable external {
@@ -103,7 +105,6 @@ contract BetContract {
         require(options.length > optionId, "Option does not exist");
         uint betId = getNextBetId();
 
-
         bets[msg.sender].push(Bet({
             betAmount: betAmount,
             optionId: optionId, 
@@ -112,7 +113,7 @@ contract BetContract {
             resolved: false,
             odd: options[optionId].odd,
             timestamp: block.timestamp,
-            resolvedAfter: block.timestamp 
+            resolvedAfter: dateTimeContract.getResolvedAfter(block.timestamp)
         }));
         tokenContract.transferFrom(msg.sender, address(this), betAmount);
         betters.push(msg.sender);
@@ -145,7 +146,6 @@ contract BetContract {
     }
     
     function resolveBet(uint betId, uint80 roundId) public {
-        console.log(block.timestamp);
 
         require(bets[msg.sender].length > betId, "Corresponding bet not found");        
 
@@ -153,13 +153,12 @@ contract BetContract {
         Option memory correspondingOption = options[correspondingBet.optionId];
 
         require(!correspondingBet.resolved, "Bet already resolved");
-
-
-        int price = getHistoricalPrice(roundId);
+        require(correspondingBet.resolvedAfter < block.timestamp, "Too soon to resolve bet");
+        require(resolvedPrices[correspondingBet.resolvedAfter] != 0, "No resolved price");
 
         if (
-            correspondingBet.price * (100 + correspondingOption.max) / 100 > price
-            && correspondingBet.price * (100 + correspondingOption.min) / 100 <= price
+            correspondingBet.price * (100 + correspondingOption.max) / 100 > resolvedPrices[correspondingBet.resolvedAfter]
+            && correspondingBet.price * (100 + correspondingOption.min) / 100 <= resolvedPrices[correspondingBet.resolvedAfter]
         ) {
             tokenContract.transfer(msg.sender, correspondingBet.betAmount * correspondingBet.odd / 100);
             emit BetResolved(
@@ -178,8 +177,6 @@ contract BetContract {
 
         }
         bets[msg.sender][betId].resolved = true;
-
-
     }
 
     /**
@@ -205,6 +202,26 @@ contract BetContract {
         ) = priceFeed.getRoundData(roundId);
         require(timeStamp > 0, "Round not complete");
         return price;
+    }
+
+    function abs(int x) private pure returns (uint) {
+        return x >= 0 ? uint(x) : uint(-x);
+    }
+    function setResolverRound(uint timestamp, uint80 roundId) public {
+        console.log(block.timestamp);
+        console.log(timestamp);
+        require(block.timestamp > timestamp, "Timestamp must not be in the futur");
+        require(resolvedPrices[timestamp] == 0, "Already resolved for this timestamp");
+
+        (
+            ,
+            int price,
+            ,
+            uint roundTimestamp,
+        ) = priceFeed.getRoundData(roundId); 
+        require(abs(int(roundTimestamp - timestamp)) < 3 * 60, "Round timestamp does not match timestamp");
+
+        resolvedPrices[timestamp] = price;
     }
 }
 

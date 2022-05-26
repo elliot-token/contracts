@@ -220,6 +220,7 @@ contract DateTime is IDatetime {
 
         function getResolvedAfter(uint timestamp) external pure returns(uint) {
                 _DateTime memory date = parseTimestamp(timestamp);
+
                 if (date.hour >= 15) {
                         return toTimestamp(date.year, date.month, date.day + 1, 21);
                 } else {
